@@ -1,57 +1,42 @@
 package com.app.dwong.configuration;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 /**
  * Created by dwong on 3/3/17.
  */
+@Configuration
 @EnableResourceServer
 public class ResourceServerConfiguration{
 
     @Bean
-    public ResourceServerConfigurer authorizationServerConfigurer() {
+    public ResourceServerConfigurer resourceServerConfigurer(ResourceServerTokenServices tokenServices) {
         return new ResourceServerConfigurer() {
+
             @Override
             public void configure(ResourceServerSecurityConfigurer config) {
-                config.tokenServices(tokenServices());
+                config.tokenServices(tokenServices);
             }
 
             @Override
             public void configure(HttpSecurity http) throws Exception {
 
+                http
+                        .authorizeRequests()
+                        .antMatchers("/me",  "/user").authenticated()
+                        .and().exceptionHandling().authenticationEntryPoint(oAuth2AuthenticationEntryPoint());
             }
         };
     }
 
-
-
-    @Bean
-    public TokenStore tokenStore() {
-        return new JwtTokenStore(accessTokenConverter());
+    private OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint () {
+        return new OAuth2AuthenticationEntryPoint();
     }
-
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter() {
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey("123");
-        return converter;
-    }
-
-    @Bean
-    @Primary
-    public DefaultTokenServices tokenServices() {
-        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-        defaultTokenServices.setTokenStore(tokenStore());
-        return defaultTokenServices;
-    }
-
 }

@@ -1,15 +1,14 @@
 server:
-    port: 8081
-    context-path: /uaa
+  port: 8081
+  context-path: /uaa
+
 security:
   oauth2:
     client:
-      client-secret: acmesecret
       client-id: acme
-      authorized-grant-types: authorization_code,refresh_token,password
-      scope: write
-    resource:
-      user-info-uri: http://localhost:8081/uaa/user
+      client-secret: acmesecret
+      access-token-uri: http://localhost:8081/uaa/oauth/token
+      user-authorization-uri: http://localhost:8081/uaa/oauth/authorize
   user:
     name: 'vale'
     password: 'pass'
